@@ -7,14 +7,12 @@ on:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend to Render
+    name: No Backend Deployment
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Trigger Render Deployment
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }} \
-            -H "Content-Type: application/json"
+      - name: Skip backend deployment
+        run: echo "Backend deployment disabled — configure deployment job as needed."
 
   deploy-frontend:
     name: Build and Deploy Frontend to GitHub Pages
