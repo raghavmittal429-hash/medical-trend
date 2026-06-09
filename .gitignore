@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv
+venv/
+ENV/
+env/
+.python-version
+
+# Local DB
+backend/*.db
+backend/*.sqlite
+
+# Builds
+build/
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/pubspec.lock
+
+# Flutter
+flutter_app/.metadata
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/ios/Flutter/Flutter.framework
+flutter_app/.pub-cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# GitHub Actions
+.github/workflows/*.yml
+
+# Temporary files
+*.swp
+*~
