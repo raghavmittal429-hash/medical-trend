@@ -28,15 +28,13 @@ jobs:
           path: backend
 
   deploy-frontend:
-    name: Build and Deploy Frontend to Netlify
+    name: Build and Deploy Frontend to GitHub Pages
     runs-on: ubuntu-latest
     needs: deploy-backend
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -51,11 +49,8 @@ jobs:
         run: |
           cd flutter_app
           flutter build web --dart-define=API_BASE_URL=${API_BASE_URL} --release
-      - name: Install Netlify CLI
-        run: npm install netlify-cli
-      - name: Deploy to Netlify
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          npx netlify deploy --prod --dir=flutter_app/build/web --site=${NETLIFY_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN}
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./flutter_app/build/web
