@@ -7,23 +7,14 @@ on:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend to PythonAnywhere
+    name: Deploy Backend to Render
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to PythonAnywhere via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PYTHONANYWHERE_HOST }}
-          username: ${{ secrets.PYTHONANYWHERE_USERNAME }}
-          key: ${{ secrets.PYTHONANYWHERE_SSH_KEY }}
-          port: 22
-          script: |
-            cd ~/${{ secrets.PYTHONANYWHERE_APP_DIR }}
-            git pull origin main
-            source venv/bin/activate
-            pip install -r backend/requirements.txt
-            touch /var/www/${{ secrets.PYTHONANYWHERE_USERNAME }}_pythonanywhere_com_wsgi.py
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }} \
+            -H "Content-Type: application/json"
 
   deploy-frontend:
     name: Build and Deploy Frontend to GitHub Pages
