@@ -1,4 +1,4 @@
-# Deployment Guide: Netlify (Frontend) + Railway (Backend)
+# Deployment Guide: GitHub Pages (Frontend) + Railway (Backend)
 
 ## 1. Deploy Backend to Railway
 
@@ -13,27 +13,33 @@
 
 ## GitHub Actions Deployment
 
-A workflow has been added at `.github/workflows/deploy.yml` to deploy the backend to Railway and the frontend to Netlify on pushes to `main`.
+A workflow has been added at `.github/workflows/deploy.yml` to deploy the backend to Railway and the frontend to GitHub Pages on pushes to `main`.
 
 Add these GitHub repository secrets before push:
 - `RAILWAY_API_KEY`
 - `RAILWAY_PROJECT_ID`
 - `RAILWAY_ENVIRONMENT`
 - `API_BASE_URL`
-- `NETLIFY_AUTH_TOKEN`
-- `NETLIFY_SITE_ID`
 
+> **Note:** GitHub Pages deployment uses the built-in `GITHUB_TOKEN` (no additional credentials needed).
 > **Note:** `nixpacks.toml` installs `tesseract` and `poppler` automatically for OCR/PDF support.
 
 ---
 
-## 2. Deploy Frontend to Netlify
+## 2. Deploy Frontend to GitHub Pages
 
-1. Go to [netlify.com](https://netlify.com) → Add New Site → Import from GitHub
-2. Build settings are auto-read from `netlify.toml` (no changes needed)
-3. Add this **Environment Variable** in Netlify dashboard → Site Settings → Env Vars:
-   - `API_BASE_URL` = `https://your-app.up.railway.app` *(your Railway URL)*
-4. Trigger a deploy
+**Automatic via CI/CD:** When you push to `main`, the GitHub Actions workflow automatically builds the Flutter web app and deploys it to GitHub Pages.
+
+**Manual Setup (One-time):**
+
+1. Go to your GitHub repo → **Settings** → **Pages**
+2. Under "Build and deployment":
+   - **Source:** Select "Deploy from a branch"
+   - **Branch:** Select `gh-pages`
+   - **Folder:** Leave as `/ (root)`
+3. Click **Save**
+
+Your frontend will be available at: `https://raghavmittal429-hash.github.io/medical-trend`
 
 ---
 
@@ -41,7 +47,7 @@ Add these GitHub repository secrets before push:
 
 - The Flutter app reads `API_BASE_URL` at **build time** via `--dart-define`
 - The backend reads `ALLOWED_ORIGINS` at **runtime** to restrict CORS
-- After both are deployed, update `ALLOWED_ORIGINS` in Railway to your Netlify URL
+- After backend is deployed, update `ALLOWED_ORIGINS` in Railway to your GitHub Pages URL: `https://raghavmittal429-hash.github.io`
 
 ---
 
@@ -68,7 +74,7 @@ flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:8000
 
 | Variable | Where | Value |
 |----------|-------|-------|
-| `API_BASE_URL` | Netlify | `https://your-app.up.railway.app` |
+| `API_BASE_URL` | GitHub Actions (build-time) | `https://your-app.up.railway.app` |
 | `ANTHROPIC_API_KEY` | Railway | your Anthropic key |
-| `ALLOWED_ORIGINS` | Railway | `https://your-site.netlify.app` |
+| `ALLOWED_ORIGINS` | Railway | `https://raghavmittal429-hash.github.io` |
 | `LANGSMITH_API_KEY` | Railway | your LangSmith key (optional) |
