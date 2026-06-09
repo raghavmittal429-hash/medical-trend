@@ -1,0 +1,12 @@
+[build]
+  command = "bash netlify-build.sh"
+  publish = "flutter_app/build/web"
+
+[build.environment]
+  # Set API_BASE_URL in Netlify dashboard → Site Settings → Environment Variables
+  # Example: API_BASE_URL = https://your-app.up.railway.app
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

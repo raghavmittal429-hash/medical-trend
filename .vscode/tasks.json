@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Backend Dependencies",
+      "type": "shell",
+      "command": "python -m pip install -r backend/requirements.txt",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Backend Server",
+      "type": "shell",
+      "command": "python backend/main.py",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Install Flutter Dependencies",
+      "type": "shell",
+      "command": "cd flutter_app && flutter pub get",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Flutter Web",
+      "type": "shell",
+      "command": "cd flutter_app && flutter pub get && flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8000 --release",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Flutter Web",
+      "type": "shell",
+      "command": "cd flutter_app && flutter run -d chrome --web-port=3000 --dart-define=API_BASE_URL=http://127.0.0.1:8000",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

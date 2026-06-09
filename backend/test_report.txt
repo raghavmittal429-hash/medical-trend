@@ -1,0 +1,3 @@
+Test Report
+Glucose: 95 mg/dL (70-100)
+Hemoglobin: 14.2 g/dL (12-16)
