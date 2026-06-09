@@ -7,25 +7,23 @@ on:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend to Railway
+    name: Deploy Backend to PythonAnywhere
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Deploy to PythonAnywhere via SSH
+        uses: appleboy/ssh-action@master
         with:
-          python-version: '3.11'
-      - name: Install backend dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-      - name: Deploy backend to Railway
-        uses: railwayapp/railway-action@v0.2.8
-        with:
-          railwayToken: ${{ secrets.RAILWAY_API_KEY }}
-          projectId: ${{ secrets.RAILWAY_PROJECT_ID }}
-          environment: ${{ secrets.RAILWAY_ENVIRONMENT }}
-          path: backend
+          host: ${{ secrets.PYTHONANYWHERE_HOST }}
+          username: ${{ secrets.PYTHONANYWHERE_USERNAME }}
+          key: ${{ secrets.PYTHONANYWHERE_SSH_KEY }}
+          port: 22
+          script: |
+            cd ~/${{ secrets.PYTHONANYWHERE_APP_DIR }}
+            git pull origin main
+            source venv/bin/activate
+            pip install -r backend/requirements.txt
+            touch /var/www/${{ secrets.PYTHONANYWHERE_USERNAME }}_pythonanywhere_com_wsgi.py
 
   deploy-frontend:
     name: Build and Deploy Frontend to GitHub Pages
