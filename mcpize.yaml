@@ -4,7 +4,7 @@
 version: 1
 
 name: "Medical Trend"
-slug: "medical-trend-2"
+slug: "medical-trend-3"
 
 runtime: python
 entry: "backend/main.py"
@@ -13,10 +13,13 @@ build:
   install: "pip install -r backend/requirements.txt"
 
 start:
-  type: http
+  type: stdio
   command: "python"
   args:
     - "backend/main.py"
 
 bridge:
-  mode: http
+  mode: stdio
+
+credentials:
+  - name: "ANTHROPIC_API_KEY"
