@@ -1,5 +1,6 @@
 # Medical Flutter App
-[![MCPize](https://mcpize.com/badge/@raghavmittal429/medical-trend)](https://mcpize.com/mcp/medical-trend)
+
+[![MCPize](https://mcpize.com/badge/@raghavmittal429/medical-trend-2)](https://mcpize.com/mcp/medical-trend-2)
 
 A Clinical Decision Support System combining Flutter web frontend with FastAPI backend for processing medical reports.
 
@@ -8,10 +9,10 @@ A Clinical Decision Support System combining Flutter web frontend with FastAPI b
 Use this MCP server instantly with no local installation:
 
 ```bash
-npx -y mcpize connect @raghavmittal429/medical-trend --client claude
+npx -y mcpize connect @raghavmittal429/medical-trend-2 --client claude
 ```
 
-Or connect at: **https://mcpize.com/mcp/medical-trend**
+Or connect at: **https://mcpize.com/mcp/medical-trend-2**
 
 ## Features
 
