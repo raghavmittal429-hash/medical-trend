@@ -1,0 +1,25 @@
+# MCPize Configuration
+# Docs: https://mcpize.com/docs/mcpize-yaml
+
+version: 1
+
+name: "Medical Trend"
+slug: "medical-trend"
+
+runtime: python
+entry: "backend/main.py"
+
+build:
+  install: "pip install -r backend/requirements.txt"
+
+start:
+  type: http
+  command: "python"
+  args:
+    - "backend/main.py"
+
+bridge:
+  mode: http
+
+credentials:
+  - name: "ANTHROPIC_API_KEY"
