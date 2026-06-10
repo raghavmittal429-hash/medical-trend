@@ -4,7 +4,7 @@
 version: 1
 
 name: "Medical Trend"
-slug: "medical-trend"
+slug: "medical-trend-2"
 
 runtime: python
 entry: "backend/main.py"
@@ -20,6 +20,3 @@ start:
 
 bridge:
   mode: http
-
-credentials:
-  - name: "ANTHROPIC_API_KEY"
