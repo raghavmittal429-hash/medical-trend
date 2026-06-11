@@ -4,7 +4,7 @@
 version: 1
 
 name: "Medical Trend"
-slug: "medical-trend-4"
+slug: "medical-trend-5"
 
 runtime: python
 entry: "backend/main.py"
