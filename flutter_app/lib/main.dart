@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
   // Falls back to localhost for local development
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8000',
+    defaultValue: 'https://medical-trend-8.onrender.com',
   );
 
   Uri _buildApiUrl(String path) {
