@@ -48,6 +48,9 @@ class _HomePageState extends State<HomePage> {
   bool _isTranslating = false;
   bool _isDownloadingPdf = false;
   String _selectedLanguage = 'English';
+  bool _ttsEnabled = true;
+  String? _selectedVoiceName;
+  List<dynamic> _availableVoices = [];
   String? _currentJobId;
   Timer? _pollingTimer;
 
@@ -71,8 +74,102 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initTts() async {
     await _tts.setLanguage(_ttsLocaleFor(_selectedLanguage));
-    await _tts.setSpeechRate(0.5);
+    await _tts.setSpeechRate(0.45);
+    await _tts.setPitch(1.0);
+    await _tts.awaitSpeakCompletion(true);
+    await _loadAvailableVoices();
+    await _applyVoiceForLanguage(_selectedLanguage);
   }
+
+  Future<void> _loadAvailableVoices() async {
+    try {
+      final voices = await _tts.getVoices;
+      if (voices is List) {
+        _availableVoices = voices;
+      }
+    } catch (_) {
+      _availableVoices = [];
+    }
+  }
+
+  Future<void> _applyVoiceForLanguage(String language) async {
+    final targetLocale = _ttsLocaleFor(language);
+    dynamic bestVoice;
+
+    if (_availableVoices.isNotEmpty) {
+      final localeMatches = _availableVoices.where((voice) {
+        final voiceLocale = _voiceLocaleOf(voice).toLowerCase();
+        return voiceLocale.contains(targetLocale.toLowerCase()) || targetLocale.toLowerCase().contains(voiceLocale);
+      }).toList();
+
+      if (localeMatches.isNotEmpty) {
+        bestVoice = _preferredVoice(localeMatches);
+      } else {
+        bestVoice = _preferredVoice(_availableVoices);
+      }
+    }
+
+    if (bestVoice != null) {
+      _selectedVoiceName = _voiceNameOf(bestVoice);
+      await _setTtsVoice(bestVoice);
+    }
+
+    await _tts.setLanguage(targetLocale);
+    await _tts.setSpeechRate(0.45);
+    await _tts.setPitch(1.0);
+  }
+
+  String _voiceLocaleOf(dynamic voice) {
+    if (voice is Map) {
+      final locale = voice['locale'] ?? voice['language'] ?? voice['name'];
+      return locale?.toString() ?? '';
+    }
+    return voice.toString();
+  }
+
+  String _voiceNameOf(dynamic voice) {
+    if (voice is Map) {
+      return voice['name']?.toString() ?? _voiceLocaleOf(voice);
+    }
+    return voice.toString();
+  }
+
+  dynamic _preferredVoice(List<dynamic> voices) {
+    final preferred = voices.firstWhere(
+      (voice) {
+        final name = _voiceNameOf(voice).toLowerCase();
+        return name.contains('soft') || name.contains('smooth') || name.contains('female') || name.contains('male');
+      },
+      orElse: () => voices.first,
+    );
+    return preferred;
+  }
+
+  Future<void> _setTtsVoice(dynamic voice) async {
+    try {
+      if (voice is Map) {
+        final settings = <String, String>{};
+        if (voice.containsKey('name')) settings['name'] = voice['name'].toString();
+        if (voice.containsKey('locale')) settings['locale'] = voice['locale'].toString();
+        if (settings.isNotEmpty) {
+          await _tts.setVoice(settings);
+        }
+      }
+    } catch (_) {
+      // Ignore voice selection failure; fallback to language-only mode.
+    }
+  }
+
+  Future<void> _setTtsLanguage(String locale) async {
+    try {
+      await _tts.setLanguage(locale);
+    } catch (_) {
+      if (locale != 'en-US') {
+        await _tts.setLanguage('en-US');
+      }
+    }
+  }
+
   // Base URL is injected at build time via --dart-define=API_BASE_URL=https://your-app.up.railway.app
   // Falls back to localhost for local development
   static const String _baseUrl = String.fromEnvironment(
@@ -203,10 +300,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _speak(String text) async {
-    if (text.isEmpty) return;
-    
+    if (text.isEmpty || !_ttsEnabled) return;
+
     await _tts.stop();
-    await _tts.setLanguage(_ttsLocaleFor(_selectedLanguage));
+    await _applyVoiceForLanguage(_selectedLanguage);
     await _tts.speak(text);
   }
 
@@ -648,7 +745,7 @@ class _HomePageState extends State<HomePage> {
                                   };
                                 }
                               });
-                              _tts.setLanguage(_ttsLocaleFor(newLang));
+                              _applyVoiceForLanguage(newLang);
                               if (_reportData != null) {
                                 _retranslate(newLang);
                               }
@@ -660,6 +757,88 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showVoiceSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 20, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDF0F0),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.hearing, color: Color(0xFFA01A1A), size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Select Voice Model',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                        Text('Choose a smoother voice for playback',
+                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1),
+                const SizedBox(height: 4),
+                if (_availableVoices.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('No available voices detected on this device.', style: TextStyle(fontSize: 14)),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.55,
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _availableVoices.length,
+                      itemBuilder: (context, index) {
+                        final voice = _availableVoices[index];
+                        final voiceName = _voiceNameOf(voice);
+                        final voiceLocale = _voiceLocaleOf(voice);
+                        final isSelected = _selectedVoiceName == voiceName;
+                        return ListTile(
+                          title: Text(voiceName),
+                          subtitle: Text(voiceLocale),
+                          trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFFA01A1A)) : null,
+                          onTap: () async {
+                            Navigator.pop(context);
+                            setState(() {
+                              _selectedVoiceName = voiceName;
+                            });
+                            await _setTtsVoice(voice);
+                            await _setTtsLanguage(_ttsLocaleFor(_selectedLanguage));
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
         );
@@ -2485,12 +2664,30 @@ class _HomePageState extends State<HomePage> {
             child: ListTile(
               leading: const Icon(Icons.record_voice_over, color: Color(0xFFA01A1A)),
               title: const Text('Text-to-Speech'),
-              subtitle: const Text('Enable voice output'),
+              subtitle: Text(_ttsEnabled ? 'Enabled' : 'Disabled'),
               trailing: Switch(
-                value: true,
-                onChanged: (value) {},
+                value: _ttsEnabled,
+                onChanged: (value) async {
+                  setState(() {
+                    _ttsEnabled = value;
+                  });
+                  if (value) {
+                    await _applyVoiceForLanguage(_selectedLanguage);
+                  } else {
+                    await _tts.stop();
+                  }
+                },
                 activeThumbColor: const Color(0xFFA01A1A),
               ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.headphones, color: Color(0xFFA01A1A)),
+              title: const Text('Voice Model'),
+              subtitle: Text(_selectedVoiceName ?? 'Default'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _showVoiceSelector,
             ),
           ),
           
