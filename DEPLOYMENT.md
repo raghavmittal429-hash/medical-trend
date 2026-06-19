@@ -26,6 +26,12 @@
    - Start Command: (auto-detected from `render.yaml`)
    - Click **Create Web Service**
 
+   - Recommended Start Command (explicit):
+```
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+     This ensures Render uses the platform-provided `$PORT` environment variable.
+
 5. **Your backend URL will be:**
    ```
    https://medical-trend-backend.onrender.com
@@ -56,6 +62,12 @@ The `render.yaml` file in the root directory tells Render:
 - Start the Uvicorn server on port 8000
 - Use Python 3.11.9
 - Auto-reload on git push to main
+ - Start the Uvicorn server using the platform port, for example:
+```
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+ - Use Python 3.11.9
+ - Auto-reload on git push to main
 
 ## GitHub Actions Deployment
 
