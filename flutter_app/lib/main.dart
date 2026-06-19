@@ -51,6 +51,7 @@ class _HomePageState extends State<HomePage> {
   bool _ttsEnabled = true;
   String? _selectedVoiceName;
   List<dynamic> _availableVoices = [];
+  List<html.SpeechSynthesisVoice> _speechVoices = [];
   String? _currentJobId;
   Timer? _pollingTimer;
 
@@ -73,12 +74,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initTts() async {
-    await _tts.setLanguage(_ttsLocaleFor(_selectedLanguage));
     await _tts.setSpeechRate(0.45);
     await _tts.setPitch(1.0);
     await _tts.awaitSpeakCompletion(true);
+    if (kIsWeb) {
+      await _loadWebVoices();
+    }
     await _loadAvailableVoices();
     await _applyVoiceForLanguage(_selectedLanguage);
+  }
+
+  Future<void> _loadWebVoices() async {
+    try {
+      _speechVoices = List<html.SpeechSynthesisVoice>.from(html.window.speechSynthesis.getVoices());
+      if (_speechVoices.isEmpty) {
+        html.window.speechSynthesis.onVoicesChanged.listen((_) {
+          final voices = html.window.speechSynthesis.getVoices();
+          _speechVoices = List<html.SpeechSynthesisVoice>.from(voices);
+          setState(() {});
+        });
+      }
+    } catch (_) {
+      _speechVoices = [];
+    }
   }
 
   Future<void> _loadAvailableVoices() async {
@@ -157,6 +175,44 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (_) {
       // Ignore voice selection failure; fallback to language-only mode.
+    }
+  }
+
+  html.SpeechSynthesisVoice? _chooseWebVoice(String locale) {
+    if (_speechVoices.isEmpty) return null;
+    final languageCode = locale.split('-').first.toLowerCase();
+    final exact = _speechVoices.where((voice) {
+      return voice.lang?.toLowerCase().contains(locale.toLowerCase()) ?? false;
+    }).toList();
+    if (exact.isNotEmpty) return exact.first;
+
+    final partial = _speechVoices.where((voice) {
+      return voice.lang?.toLowerCase().startsWith(languageCode) ?? false;
+    }).toList();
+    if (partial.isNotEmpty) return partial.first;
+
+    return _speechVoices.first;
+  }
+
+  Future<void> _speakWeb(String text) async {
+    if (text.isEmpty || !_ttsEnabled) return;
+    try {
+      final locale = _ttsLocaleFor(_selectedLanguage);
+      final utterance = html.SpeechSynthesisUtterance(text)
+        ..lang = locale
+        ..rate = 0.9
+        ..pitch = 1.0
+        ..volume = 1.0;
+
+      final voice = _chooseWebVoice(locale);
+      if (voice != null) {
+        utterance.voice = voice;
+      }
+
+      html.window.speechSynthesis.cancel();
+      html.window.speechSynthesis.speak(utterance);
+    } catch (_) {
+      // fallback: nothing to do, maybe flutter_tts will still work
     }
   }
 
@@ -301,6 +357,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _speak(String text) async {
     if (text.isEmpty || !_ttsEnabled) return;
+
+    if (kIsWeb) {
+      await _speakWeb(text);
+      return;
+    }
 
     await _tts.stop();
     await _applyVoiceForLanguage(_selectedLanguage);
