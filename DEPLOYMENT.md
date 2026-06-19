@@ -28,7 +28,9 @@
 
    - Recommended Start Command (explicit):
 ```
-uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+# If your repository contains the backend in a subfolder named `backend`,
+# run the command from inside that folder so Python can import the package:
+cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
      This ensures Render uses the platform-provided `$PORT` environment variable.
 
@@ -62,9 +64,9 @@ The `render.yaml` file in the root directory tells Render:
 - Start the Uvicorn server on port 8000
 - Use Python 3.11.9
 - Auto-reload on git push to main
- - Start the Uvicorn server using the platform port, for example:
+ - Start the Uvicorn server using the platform port, for example (monorepo layout):
 ```
-uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
  - Use Python 3.11.9
  - Auto-reload on git push to main
