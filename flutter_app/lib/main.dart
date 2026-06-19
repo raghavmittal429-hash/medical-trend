@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
       final voices = html.window.speechSynthesis?.getVoices() ?? [];
       _speechVoices = List<html.SpeechSynthesisVoice>.from(voices);
       if (_speechVoices.isEmpty) {
-        html.window.speechSynthesis?.onVoicesChanged?.listen((_) {
+        html.window.addEventListener('voiceschanged', (event) {
           final voices = html.window.speechSynthesis?.getVoices() ?? [];
           _speechVoices = List<html.SpeechSynthesisVoice>.from(voices);
           setState(() {});
