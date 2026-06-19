@@ -86,10 +86,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadWebVoices() async {
     try {
-      _speechVoices = List<html.SpeechSynthesisVoice>.from(html.window.speechSynthesis.getVoices());
+      final voices = html.window.speechSynthesis?.getVoices() ?? [];
+      _speechVoices = List<html.SpeechSynthesisVoice>.from(voices);
       if (_speechVoices.isEmpty) {
-        html.window.speechSynthesis.onVoicesChanged.listen((_) {
-          final voices = html.window.speechSynthesis.getVoices();
+        html.window.speechSynthesis?.onVoicesChanged?.listen((_) {
+          final voices = html.window.speechSynthesis?.getVoices() ?? [];
           _speechVoices = List<html.SpeechSynthesisVoice>.from(voices);
           setState(() {});
         });
@@ -209,8 +210,8 @@ class _HomePageState extends State<HomePage> {
         utterance.voice = voice;
       }
 
-      html.window.speechSynthesis.cancel();
-      html.window.speechSynthesis.speak(utterance);
+      html.window.speechSynthesis?.cancel();
+      html.window.speechSynthesis?.speak(utterance);
     } catch (_) {
       // fallback: nothing to do, maybe flutter_tts will still work
     }
