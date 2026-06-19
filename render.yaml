@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: medical-trend-backend
+    env: python
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: ALLOWED_ORIGINS
+        value: "https://raghavmittal429-hash.github.io"
+
+# Notes:
+# - Render will use the provided `startCommand` and substitute `$PORT` at runtime.
+# - Adjust `buildCommand` if you need to run migrations or other build steps.
